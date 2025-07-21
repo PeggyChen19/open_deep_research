@@ -17,7 +17,7 @@ from langchain_mcp_adapters.client import MultiServerMCPClient
 from open_deep_research.state import Summary, ResearchComplete
 from open_deep_research.configuration import SearchAPI, Configuration
 from open_deep_research.prompts import summarize_webpage_prompt
-
+from open_deep_research.custom_tools import query_logs_tool
 
 ##########################
 # Tavily Search Tool Utils
@@ -291,6 +291,7 @@ async def get_all_tools(config: RunnableConfig):
     configurable = Configuration.from_runnable_config(config)
     search_api = SearchAPI(get_config_value(configurable.search_api))
     tools.extend(await get_search_tool(search_api))
+    tools.append(query_logs_tool)
     existing_tool_names = {tool.name if hasattr(tool, "name") else tool.get("name", "web_search") for tool in tools}
     mcp_tools = await load_mcp_tools(config, existing_tool_names)
     tools.extend(mcp_tools)

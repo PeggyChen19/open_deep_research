@@ -4,6 +4,7 @@ These are the messages that have been exchanged so far from the user asking for 
 {messages}
 </Messages>
 
+Note: You already have access to a complete, pre-indexed dataset of Event Logs. There is no need to ask the user to upload or provide these logs. You can retrieve relevant log entries using internal tools.
 Today's date is {date}.
 
 Assess whether you need to ask a clarifying question, or if the user has already provided enough information for you to start research.
@@ -39,8 +40,9 @@ For the verification message when no clarification is needed:
 """
 
 
-transform_messages_into_research_topic_prompt = """You will be given a set of messages that have been exchanged so far between yourself and the user. 
-Your job is to translate these messages into a more detailed and concrete research question that will be used to guide the research.
+transform_messages_into_research_topic_prompt = """
+You will be given a set of messages that have been exchanged so far between yourself and the user.
+Your job is to translate these messages into a more detailed and concrete log analysis request that will be used to guide the retrieval and reasoning process over the Event Logs.
 
 The messages that have been exchanged so far between yourself and the user are:
 <Messages>
@@ -49,29 +51,27 @@ The messages that have been exchanged so far between yourself and the user are:
 
 Today's date is {date}.
 
-You will return a single research question that will be used to guide the research.
+You will return a single research (investigation) question that will be used to guide log analysis.
 
 Guidelines:
 1. Maximize Specificity and Detail
-- Include all known user preferences and explicitly list key attributes or dimensions to consider.
-- It is important that all details from the user are included in the instructions.
+- Include all known user preferences, including relevant Event IDs, Computer Names, LogonType, Time Windows, or any indicators of suspicious activity.
+- Clearly state the nature of the investigation (e.g., brute-force login attempts, lateral movement, privilege escalation).
 
-2. Fill in Unstated But Necessary Dimensions as Open-Ended
-- If certain attributes are essential for a meaningful output but the user has not provided them, explicitly state that they are open-ended or default to no specific constraint.
+2. Clarify Open-Ended Dimensions
+- If the user has not specified key attributes (e.g., time range, specific account, or system), acknowledge the lack of constraint and treat them as open-ended in the output.
 
 3. Avoid Unwarranted Assumptions
-- If the user has not provided a particular detail, do not invent one.
-- Instead, state the lack of specification and guide the researcher to treat it as flexible or accept all possible options.
+- Do not assume the user wants to investigate a specific event type unless explicitly stated.
+- Instead, acknowledge ambiguity and phrase the question to allow flexible log retrieval.
 
 4. Use the First Person
-- Phrase the request from the perspective of the user.
+- Phrase the request as if the user is making the request themselves. For example: “I want to identify any signs of brute-force login attempts targeting the Administrator account…”
 
-5. Sources
-- If specific sources should be prioritized, specify them in the research question.
-- For product and travel research, prefer linking directly to official or primary websites (e.g., official brand sites, manufacturer pages, or reputable e-commerce platforms like Amazon for user reviews) rather than aggregator sites or SEO-heavy blogs.
-- For academic or scientific queries, prefer linking directly to the original paper or official journal publication rather than survey papers or secondary summaries.
-- For people, try linking directly to their LinkedIn profile, or their personal website if they have one.
-- If the query is in a specific language, prioritize sources published in that language.
+5. Prioritize Internal Log Sources
+- The primary source of information should be the indexed Event Logs.
+- Only rely on external web sources when log data alone is insufficient to answer the question — such as for interpreting unfamiliar Event IDs, understanding known attack techniques, or mapping threat actor behavior.
+- Do not overuse web search. Use it sparingly and only to complement log-based evidence when clearly justified by the user query.
 """
 
 

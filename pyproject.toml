@@ -42,6 +42,10 @@ dependencies = [
     "ipykernel>=6.29.5",
     "supabase>=2.15.3",
     "mcp>=1.9.4",
+    "faiss-cpu>=1.11.0.post1",
+    "langchain>=0.3.25",
+    "llama-index>=0.12.49",
+    "llama-index-vector-stores-faiss>=0.4.0",
 ]
 
 [project.optional-dependencies]
