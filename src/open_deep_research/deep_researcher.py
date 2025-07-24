@@ -44,6 +44,8 @@ configurable_model = init_chat_model(
 )
 
 async def write_research_brief(state: AgentState, config: RunnableConfig)-> Command[Literal["research_supervisor"]]:
+    if state.get("research_brief") is not None:
+            return Command(goto="end")
     configurable = Configuration.from_runnable_config(config)
     research_model_config = {
         "model": configurable.research_model,
@@ -299,6 +301,7 @@ async def final_report_generation(state: AgentState, config: RunnableConfig):
             findings=findings,
             date=get_today_str()
         )
+        state["research_brief"] = None
         try:
             final_report = await configurable_model.with_config(writer_model_config).ainvoke([HumanMessage(content=final_report_prompt)])
             return {
