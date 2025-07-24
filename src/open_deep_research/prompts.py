@@ -1,4 +1,4 @@
-transform_messages_into_research_topic_prompt = """I am preparing to investigate suspicious activity on a Windows Server. I already know that abnormal behavior occurred on this system, and I want to construct a focused, methodical brief to guide my forensic review of the Event Logs.
+transform_messages_into_research_topic_prompt = """I am preparing to investigate suspicious activity on a Windows Server. I want to construct a focused, methodical brief to guide my forensic review of the Event Logs.
 I will later use a retrieval-based tool to analyze indexed logs from this system. These logs may include Security, System, and Application log types. Before viewing the logs, I want to outline all potentially relevant investigative directions, assumptions, and known attack techniques that might apply.
 
 Please help me write a research brief that does the following:
@@ -9,7 +9,6 @@ Please help me write a research brief that does the following:
    - I am also open to uncovering other forms of malicious activity, such as lateral movement or persistence mechanisms.
 
 2. **States Known Constraints or Indicators**
-   - Known facts: the logs are confirmed to contain abnormal activity.
    - Time range: not explicitly specified, but the log data is chronologically ordered. You should examine the entire available timeline from start to end.
    - Usernames: not restricted — I want to identify all potentially suspicious accounts.
    - I will rely on indexed Windows Event Logs as the primary data source.

@@ -82,13 +82,13 @@ class Configuration(BaseModel):
         }
     )
     max_researcher_iterations: int = Field(
-        default=3,
+        default=5,
         metadata={
             "x_oap_ui_config": {
                 "type": "slider",
-                "default": 3,
-                "min": 1,
-                "max": 3,
+                "default": 5,
+                "min": 3,
+                "max": 8,
                 "step": 1,
                 "description": "Maximum number of research iterations for the Research Supervisor. This is the number of times the Research Supervisor will reflect on the research and ask follow-up questions."
             }
