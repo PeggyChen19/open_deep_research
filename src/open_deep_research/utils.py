@@ -111,7 +111,7 @@ async def tavily_search_async(search_queries, max_results: int = 5, topic: Liter
 async def summarize_webpage(model: BaseChatModel, webpage_content: str) -> str:
     try:
         summary = await asyncio.wait_for(
-            model.ainvoke([HumanMessage(content=summarize_webpage_prompt.format(webpage_content=webpage_content, date=get_today_str()))]),
+            model.ainvoke([HumanMessage(content=summarize_webpage_prompt.format(webpage_content=webpage_content))]),
             timeout=60.0
         )
         return f"""<summary>\n{summary.summary}\n</summary>\n\n<key_excerpts>\n{summary.key_excerpts}\n</key_excerpts>"""

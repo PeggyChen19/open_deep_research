@@ -58,7 +58,7 @@ class Configuration(BaseModel):
                 "type": "slider",
                 "default": 1,
                 "min": 1,
-                "max": 2,
+                "max": 1,
                 "step": 1,
                 "description": "Maximum number of research units to run concurrently. This will allow the researcher to use multiple sub-agents to conduct research. Note: with more concurrency, you may run into rate limits."
             }
@@ -88,7 +88,7 @@ class Configuration(BaseModel):
                 "type": "slider",
                 "default": 3,
                 "min": 1,
-                "max": 10,
+                "max": 3,
                 "step": 1,
                 "description": "Maximum number of research iterations for the Research Supervisor. This is the number of times the Research Supervisor will reflect on the research and ask follow-up questions."
             }

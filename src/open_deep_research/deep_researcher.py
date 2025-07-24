@@ -13,14 +13,12 @@ from open_deep_research.state import (
     AgentInputState,
     SupervisorState,
     ResearcherState,
-    ClarifyWithUser,
     ResearchQuestion,
     ConductResearch,
     ResearchComplete,
     ResearcherOutputState
 )
 from open_deep_research.prompts import (
-    clarify_with_user_instructions,
     transform_messages_into_research_topic_prompt,
     research_system_prompt,
     compress_research_system_prompt,
@@ -45,25 +43,6 @@ configurable_model = init_chat_model(
     configurable_fields=("model", "max_tokens", "api_key"),
 )
 
-async def clarify_with_user(state: AgentState, config: RunnableConfig) -> Command[Literal["write_research_brief", "__end__"]]:
-    configurable = Configuration.from_runnable_config(config)
-    if not configurable.allow_clarification:
-        return Command(goto="write_research_brief")
-    messages = state["messages"]
-    model_config = {
-        "model": configurable.research_model,
-        "max_tokens": configurable.research_model_max_tokens,
-        "api_key": get_api_key_for_model(configurable.research_model, config),
-        "tags": ["langsmith:nostream"]
-    }
-    model = configurable_model.with_structured_output(ClarifyWithUser).with_retry(stop_after_attempt=configurable.max_structured_output_retries).with_config(model_config)
-    response = await model.ainvoke([HumanMessage(content=clarify_with_user_instructions.format(messages=get_buffer_string(messages), date=get_today_str()))])
-    if response.need_clarification:
-        return Command(goto=END, update={"messages": [AIMessage(content=response.question)]})
-    else:
-        return Command(goto="write_research_brief", update={"messages": [AIMessage(content=response.verification)]})
-
-
 async def write_research_brief(state: AgentState, config: RunnableConfig)-> Command[Literal["research_supervisor"]]:
     configurable = Configuration.from_runnable_config(config)
     research_model_config = {
@@ -73,10 +52,7 @@ async def write_research_brief(state: AgentState, config: RunnableConfig)-> Comm
         "tags": ["langsmith:nostream"]
     }
     research_model = configurable_model.with_structured_output(ResearchQuestion).with_retry(stop_after_attempt=configurable.max_structured_output_retries).with_config(research_model_config)
-    response = await research_model.ainvoke([HumanMessage(content=transform_messages_into_research_topic_prompt.format(
-        messages=get_buffer_string(state.get("messages", [])),
-        date=get_today_str()
-    ))])
+    response = await research_model.ainvoke([HumanMessage(content=transform_messages_into_research_topic_prompt)])
     return Command(
         goto="research_supervisor", 
         update={
@@ -85,7 +61,6 @@ async def write_research_brief(state: AgentState, config: RunnableConfig)-> Comm
                 "type": "override",
                 "value": [
                     SystemMessage(content=lead_researcher_prompt.format(
-                        date=get_today_str(),
                         max_concurrent_research_units=configurable.max_concurrent_research_units
                     )),
                     HumanMessage(content=response.research_brief)
@@ -141,7 +116,7 @@ async def supervisor_tools(state: SupervisorState, config: RunnableConfig) -> Co
         all_conduct_research_calls = [tool_call for tool_call in most_recent_message.tool_calls if tool_call["name"] == "ConductResearch"]
         conduct_research_calls = all_conduct_research_calls[:configurable.max_concurrent_research_units]
         overflow_conduct_research_calls = all_conduct_research_calls[configurable.max_concurrent_research_units:]
-        researcher_system_prompt = research_system_prompt.format(mcp_prompt=configurable.mcp_prompt or "", date=get_today_str())
+        researcher_system_prompt = research_system_prompt
         coros = [
             researcher_subgraph.ainvoke({
                 "researcher_messages": [
@@ -274,7 +249,7 @@ async def compress_research(state: ResearcherState, config: RunnableConfig):
     })
     researcher_messages = state.get("researcher_messages", [])
     # Update the system prompt to now focus on compression rather than research.
-    researcher_messages[0] = SystemMessage(content=compress_research_system_prompt.format(date=get_today_str()))
+    researcher_messages[0] = SystemMessage(content=compress_research_system_prompt)
     researcher_messages.append(HumanMessage(content=compress_research_simple_human_message))
     while synthesis_attempts < 3:
         try:
@@ -359,11 +334,10 @@ async def final_report_generation(state: AgentState, config: RunnableConfig):
     }
 
 deep_researcher_builder = StateGraph(AgentState, input=AgentInputState, config_schema=Configuration)
-deep_researcher_builder.add_node("clarify_with_user", clarify_with_user)
 deep_researcher_builder.add_node("write_research_brief", write_research_brief)
 deep_researcher_builder.add_node("research_supervisor", supervisor_subgraph)
 deep_researcher_builder.add_node("final_report_generation", final_report_generation)
-deep_researcher_builder.add_edge(START, "clarify_with_user")
+deep_researcher_builder.add_edge(START, "write_research_brief")
 deep_researcher_builder.add_edge("research_supervisor", "final_report_generation")
 deep_researcher_builder.add_edge("final_report_generation", END)
 

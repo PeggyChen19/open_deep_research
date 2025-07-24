@@ -60,7 +60,7 @@ def query_log_index(query: str) -> str:
     return "\n---\n".join(results)
 
 query_logs_tool = Tool.from_function(
-    name="SearchEventLogs",
-    description="Retrieves relevant Event Log entries over an indexed log dataset. Best used for investigating security incidents.",
+    name="RetrieveEventLogChunks",
+    description="Retrieves semantically relevant chunks from an indexed Windows Event Log file. Each query should be phrased clearly and specifically (e.g., Event ID, Time, Computer, TargetUserName, LogonType, IpAddress, ServiceName).",
     func=query_log_index
 )
