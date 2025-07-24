@@ -6,7 +6,7 @@ from supabase import create_client, Client
 from typing import Optional, Any
 
 supabase_url = os.environ.get("SUPABASE_URL")
-supabase_key = os.environ.get("SUPABASE_KEY")
+supabase_key = os.environ.get("SUPABASE_SECRET_KEY")
 supabase: Optional[Client] = None
 
 if supabase_url and supabase_key:
