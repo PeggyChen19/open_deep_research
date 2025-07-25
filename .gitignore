@@ -67,4 +67,6 @@ tmp/
 temp/
 
 .langgraph_api
+src/open_deep_research/data
 output_md*
+raw_output.txt
